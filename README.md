@@ -37,97 +37,73 @@ The methodology ........... ........ ........... ........ ........... ........
 
 ## Example
 
-An exampasdasddddd ddddddddddddddddddd dddddddddddddddddddddddddddd ddddddddddddddddddddddd ddddddddddddle for calculating TVDI in GEE is shown below. Once the user hasllllllllllllllllll his region of interest (ROI) and the NDVI and LST images, the only two steps to invoke the calculation is to import the NPP module and invoke the **computeImageNPP** function.
+The NPP processing can be executed by using two main functions. After obtaining the NDVI, LST, SOL and We collections and set the constants Topt and LUEmax, the NPP is computed for each set of images using the collectionNPP function. The first image of each collection is also used to exemplify the computation of only one NPP image by using the singleNPP function.
+
+### singleNPP
 
 ``` r
-// Define the Region of Interest
-var ROI = ee.FeatureCollection(...)
-//;;;;;;;;;;;;;;;;;;;;;;
+// Obtain the Region of Interest
+var ROI = ee.Geometry(...)
 
-// Set the NDVI image to be processed
+// Obtain the NDVI image to be processed
 var imageNDVI = ee.Image(...)
 
-// Set the LST image to be processed
+// Obtain the LST image to be processed
 var imageLST = ee.Image(...)
 
-// Set the SOL image to be processed
+// Obtain the SOL image to be processed
 var imageSOL = ee.Image(...)
 
-// Set the We image to be processed
+// Obtain the We image to be processed
 var imageWe = ee.Image(...)
 
-// Set the LUEmax parameter
-var LUE_MAX = const<int>
+// Set the constant Topt
+var Topt = const
 
-// Set the LUEmax parameter
-var T_OPT = const<int>
+// Set the constant LUEmax
+var LUEmax = const
 
 // Import NPP processing module
-var NPPmodule = require('AAAAAAALLLLLLTERARAAAAAAAAAAAAAAAAAAAAAAAusers/leobeckerdaluz/TVDI_algorithm_dev:compute_TVDI');
+var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
 // Compute NPP
-var imageNPP = NPPmodule.computeImageNPP(NDVI, LST, SOL, We, T_OPT, LUE_MAX)
+var imageNPP = computeNPP.singleNPP(imageNDVI, imageLST, imageSOL, imageWe, Topt, LUEmax)
 
 // Add NPP as a layer
 Map.addLayer(imageNPP, {}, 'NPP'}
 ```
 
-The module also can be used to compute NPP for an ImageCollection. To do this, the user invokes function **computeCollectionNPP** and the parameters NDVIImageCollection, LSTImageCollection, SOLImageCollection e WeImageCollection must be an ImageCollection with the same length and the images must 
+
+### collectionNPP
 
 ``` r
-// Define the Region of Interest
-var ROI = ee.FeatureCollection(...)
-//;;;;;;;;;;;;;;;;;;;;;;
+// Obtain the Region of Interest
+var ROI = ee.Geometry(...)
 
-// Set the NDVI ImageCollection to be processed
-var NDVIImageCollection = ee.ImageCollection(...)
+// Obtain the NDVI image collection to be processed
+var imageCollectionNDVI = ee.ImageCollection(...)
 
-// Set the LST ImageCollection to be processed
-var LSTImageCollection = ee.ImageCollection(...)
+// Obtain the LST image collection to be processed
+var imageCollectionLST = ee.ImageCollection(...)
 
-// Set the SOL ImageCollection to be processed
-var SOLImageCollection = ee.ImageCollection(...)
+// Obtain the SOL image collection to be processed
+var imageCollectionSOL = ee.ImageCollection(...)
 
-// Set the We ImageCollection to be processed
-var WeImageCollection = ee.ImageCollection(...)
+// Obtain the We image collection to be processed
+var imageCollectionWe = ee.ImageCollection(...)
 
-// Set the LUEmax parameter
-var LUE_MAX = const<int>
+// Set the constant Topt
+var Topt = const
 
-// Set the LUEmax parameter
-var T_OPT = const<int>
+// Set the constant LUEmax
+var LUEmax = const
 
 // Import NPP processing module
-var NPPmodule = require('AAAAAAALLLLLLTERARAAAAAAAAAAAAAAAAAAAAAAAusers/leobeckerdaluz/TVDI_algorithm_dev:compute_TVDI');
+var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
 // Compute NPP
-var NPPImageCollection = NPPmodule.computeCollectionNPP(NDVI_IC, LST_IC, SOL_IC, We_IC, T_OPT, LUE_MAX)
+var imageCollectionNPP = computeNPP.collectionNPP(imageCollectionNDVI, imageCollectionLST, imageCollectionSOL, imageCollectionWe, Topt, LUEmax)
 
-// Add NPP as a layer
-Map.addLayer(NPPImageCollection.first(), {}, 'NPP'}
-```
-
-
-## Citation
-
-Think **NPP algorithm** is useful? Let others discover it by telling them.
-
-Using **NPP algorithm** for a paper you are writing? Consider citing it
-
-``` r
-citation("TVDI algorithm")
-To cite NPP algorithm in publications use:
-  
-  xxxxxxxxxxxxxxC Aybar, Q Wu, L Bautista, R Yali and A Barja (2020) rgee: An R
-  package for interacting with Google Earth Engine Journal of Open
-  Source Software URL https://github.com/r-spatial/rgee/.
-
-A BibTeX entry for LaTeX users is
-
-@Article{,
-  title = {rgeexxxxxxxxxxxxxx: An R package for interacting with Google Earth Engine},
-  author = {Cexxxxxxxxxxxxxxsar Aybar and Quisheng Wu and Lesly Bautista and Roy Yali and Antony Barja},
-  journal = {Joxxxxxxxxxxxxurnal of Open Source Software},
-  year = {2020},
-}
+// Add NPP first processed image as a layer
+Map.addLayer(imageCollectionNPP.first(), {}, 'NPP'}
 ```
