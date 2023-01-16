@@ -15,142 +15,145 @@
 * 
 * This code has an example of the use of the two main NPP functions developed 
 * (singleNPP and collectionNPP). After obtaining the NDVI, LST, SOL and We
-* collections and set the constants Topt and LUEmax, the NPP is computed for 
-* each set of images using the collectionNPP function. The first image of each 
-* collection is also used to exemplify the computation of only one NPP image 
-* by using the singleNPP function.
+* collections and setting the constants Topt and LUEmax, the NPP is computed 
+* for each set of images using the collectionNPP function. The first image of 
+* each collection is also used to exemplify the computation of only one NPP 
+* image by using the singleNPP function.
 */
 
 
  
-// ===================================================================
+// ====================================================================================
 // Region of Interest (ROI)
 var ROI = ee.FeatureCollection("users/leobeckerdaluz/FIXED_shapes/mesoregionRS") 
 Map.addLayer(ROI, {}, 'ROI')
 Map.centerObject(ROI)
 
 
-// ===================================================================
+
+// ====================================================================================
 // Set scale (m/px) to upscale/downscale NDVI, LST, SOL and We images
-// var SCALE_M_PX = 1000
 var SCALE_M_PX = 250
+// var SCALE_M_PX = 1000
 
 
-// ===================================================================
-// All desired dates
-var dates = ['2018-01-01','2018-01-17','2018-02-02','2018-02-18']
+
+// ====================================================================================
+// Required dates
+var dates = ee.List(['2018-01-01','2018-01-17','2018-02-02','2018-02-18'])
+var startDate = ee.Date(dates.get(0))
+var endDate = ee.Date(dates.get(-1)).advance(1,"day")
 
 
-// ===================================================================
+
+// ====================================================================================
+// Palette to show on map
+var pal = ['lightgreen','darkgreen','yellow','orange','red','darkred']
+// var pal = ['red','white','darkgreen']
+
+
+
+// ====================================================================================
 // NDVI collection
-var imageCollectionNDVI = dates.map(function(date_string){
-  return ee.ImageCollection('MODIS/061/MOD13Q1')
+var collectionNDVI = ee.ImageCollection('MODIS/061/MOD13Q1')
+  .filterBounds(ROI)
+  .filterDate(startDate, endDate)
+  .select('NDVI')
+  .map(function(img){
+    return img
+      .clip(ROI)
+      .rename('NDVI')                               // Rename band
+      .multiply(0.0001)                             // Apply band scale
+      .reproject('EPSG:4326', null, SCALE_M_PX)     // Downscale/Upscale image
+      .set("date", img.date().format("yyyy-MM-dd")) // Set date property
+  })
+
+Map.addLayer(collectionNDVI.first(), {min:0.2,max:1.0,palette:pal}, 'IN - collectionNDVI img1')
+
+
+
+// ====================================================================================
+// Land Surface Temperature (LST) collection
+var collectionLST = dates.map(function(dateString){
+  return ee.ImageCollection("MODIS/061/MOD11A2")
     .filterBounds(ROI)
-    .filterDate(ee.Date(date_string), ee.Date(date_string).advance(16, "day"))
-    .select('NDVI')
-    .mean()
-    .clip(ROI)
-    .rename('NDVI')                             // Rename band
-    .multiply(0.0001)                           // Apply band scale
-    .reproject('EPSG:4326', null, SCALE_M_PX)   // Downscale/Upscale image
-    .set("date", date_string)                   // Set date property
-})
-/**
- * Since it iterated over a list of dates, the return object was a list. 
- * So, cast it to imageCollection.
- */
-imageCollectionNDVI = ee.ImageCollection(imageCollectionNDVI)
-
-Map.addLayer(imageCollectionNDVI.first(), {min:0.2,max:1.0,palette:['red','white','darkgreen']}, 'imageCollectionNDVI first')
-
-
-// ===================================================================
-// LST collection
-var imageCollectionLST = dates.map(function(date_string){
-  return ee.ImageCollection('MODIS/061/MOD11A2')
-    .filterBounds(ROI)
-    .filterDate(ee.Date(date_string), ee.Date(date_string).advance(16, "day"))
+    .filterDate(ee.Date(dateString), ee.Date(dateString).advance(16, "day"))
     .select('LST_Day_1km')
     .mean()
-    .clip(ROI)
-    .rename('LST')                              // Rename band
-    .multiply(0.02)                             // Apply band scale
-    .subtract(273.15)                           // Convert to degree celcius
-    .reproject('EPSG:4326', null, SCALE_M_PX)   // Downscale/Upscale image
-    .set("date", date_string)                   // Set date property
+    .rename("LST")                            // Rename band
+    .multiply(0.02)                           // Apply band scale
+    .subtract(273.15)                         // Convert from Kelvin to Celsius
+    .clip(ROI)                                // Clip geometry
+    .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .set("date", dateString)                  // Set date property
 })
-/**
- * Since it iterated over a list of dates, the return object was a list. 
- * So, cast it to imageCollection.
- */
-imageCollectionLST = ee.ImageCollection(imageCollectionLST)
+// Cast list object to imageCollection
+collectionLST = ee.ImageCollection(collectionLST)
 
-Map.addLayer(imageCollectionLST.first(), {min:20, max:35, palette:['lightgreen','darkgreen','yellow','orange','red','darkred']}, 'imageCollectionLST first')
+Map.addLayer(collectionLST.first(), {min:20, max:35, palette:pal}, 'IN - collectionLST img1')
 
 
-// ===================================================================
+
+// ====================================================================================
 // Solar Radiation (SOL) collection
-var imageCollectionSOL = dates.map(function(date_string){
+var collectionSOL = dates.map(function(dateString){
   return ee.ImageCollection("ECMWF/ERA5_LAND/HOURLY")
     .filterBounds(ROI)
-    .filterDate(ee.Date(date_string), ee.Date(date_string).advance(16, "day"))
+    .filterDate(ee.Date(dateString), ee.Date(dateString).advance(16, "day"))
     .select('surface_solar_radiation_downwards_hourly')
     .sum()
-    .clip(ROI)                                  // Clip geometry
-    .rename("SOL")                              // Rename band
-    .divide(1e6)                                // Convert J/m² to MJ/m²
-    .reproject('EPSG:4326', null, SCALE_M_PX)   // Downscale/Upscale image
-    .set("date", date_string)                   // Set date property
+    .rename("SOL")                            // Rename band
+    .divide(1e6)                              // Convert J/m² to MJ/m²
+    .clip(ROI)                                // Clip geometry
+    .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .set("date", dateString)                  // Set date property
 })
-/**
- * Since it iterated over a list of dates, the return object was a list. 
- * So, cast it to imageCollection.
- */
-imageCollectionSOL = ee.ImageCollection(imageCollectionSOL)
+// Cast list object to imageCollection
+collectionSOL = ee.ImageCollection(collectionSOL)
 
-Map.addLayer(imageCollectionSOL.first(), {min:315, max:415, palette:['lightgreen','darkgreen','yellow','orange','red','darkred']}, 'imageCollectionSOL first')
+Map.addLayer(collectionSOL.first(), {min:315, max:415, palette:pal}, 'IN - collectionSOL img1')
 
 
-// ===================================================================
-// WeMODIS is generated through a band math between the ET and PET bands.
-var imageCollectionWe = dates.map(function(date_string){
+
+// ====================================================================================
+// WeMODIS is generated through band math between the ET and PET bands
+var collectionWe = dates.map(function(dateString){
   // Accumulates the two 8-day images to one 16-day image.
-  var imagem_2datas_somadas = ee.ImageCollection("MODIS/006/MOD16A2")
-    .filterDate(ee.Date(date_string), ee.Date(date_string).advance(16, "day"))
+  var imageSum16days = ee.ImageCollection("MODIS/006/MOD16A2")
+    .filterDate(ee.Date(dateString), ee.Date(dateString).advance(16, "day"))
     .filterBounds(ROI)
     .sum()
     
   // Compute MODIS We
-  var ET = imagem_2datas_somadas.select('ET');
-  var PET = imagem_2datas_somadas.select('PET');
+  var ET = imageSum16days.select('ET');
+  var PET = imageSum16days.select('PET');
   var We = ET.divide(PET).multiply(0.5).add(0.5);
     
-  // For each we image, rename band, clip geometry, apply soybean mask and set date property
+  // For each We image, rename band, clip geometry and set date property
   return We
-    .rename('We')
-    .clip(ROI)
-    .set("data", date_string)
+    .rename('We')                             // Rename band
+    .clip(ROI)                                // Clip geometry
+    .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .set("data", dateString)                  // Set date property
 })
-/**
- * Since it iterated over a list of dates, the return object was a list. 
- * So, cast it to imageCollection.
- */
-imageCollectionWe = ee.ImageCollection(imageCollectionWe)
+// Cast list object to imageCollection
+collectionWe = ee.ImageCollection(collectionWe)
 
-Map.addLayer(imageCollectionWe.first(), {min:0.5, max:1.0, palette:['lightgreen','darkgreen','yellow','orange','red','darkred']}, 'imageCollectionWe first')
+Map.addLayer(collectionWe.first(), {min:0.5, max:1.0, palette:pal}, 'IN - collectionWe img1')
 
 
-// ===================================================================
+
+// ====================================================================================
 // Optimal Temperature
-var Topt = ee.Image(24.85);
+var Topt = 24.85
 
 
-// ===================================================================
+
+// ====================================================================================
 // Max LUE
-var LUEmax = ee.Image(0.926);
+var LUEmax = 0.926
 
 
- 
 
 print("============== INPUTS ==============",
       "- Region of Interest:", 
@@ -158,13 +161,13 @@ print("============== INPUTS ==============",
       "- Scale (m/px):", 
       SCALE_M_PX,
       "- Image Collection NDVI:", 
-      imageCollectionNDVI,
+      collectionNDVI,
       "- Image Collection LST:", 
-      imageCollectionLST,
+      collectionLST,
       "- Image Collection SOL:", 
-      imageCollectionSOL,
+      collectionSOL,
       "- Image Collection We:", 
-      imageCollectionWe,
+      collectionWe,
       "- Optimal Temperature:", 
       Topt,
       "- Maximum LUE:", 
@@ -172,55 +175,58 @@ print("============== INPUTS ==============",
 
 
 
+// ====================================================================================
+// Apply a soybean mask in all collections
+// ====================================================================================
 
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
-// APPLY SOYBEAN MASK ????
+var soybeanMask = ee.Image("users/leobeckerdaluz/FIXED/soybeanMask_mesoregionRS")
 
+var maskCollections = function(img){return img.updateMask(soybeanMask)}
+
+collectionNDVI = collectionNDVI.map(maskCollections)
+collectionLST = collectionLST.map(maskCollections)
+collectionSOL = collectionSOL.map(maskCollections)
+collectionWe = collectionWe.map(maskCollections)
 
 
-// ===================================================================
+
+// ====================================================================================
 // Compute NPP
-// ===================================================================
+// ====================================================================================
 
 var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
-var NPPvisParams = {min:20, max:130, palette:['lightgreen','darkgreen','yellow','orange','red','darkred']}
+var NPPvisParams = {min:20, max:130, palette:pal}
 
-  
-print("===== collection NPP example =======")
 
-var imageCollectionNPP = computeNPP.collectionNPP(
-  imageCollectionNDVI, 
-  imageCollectionLST,
-  imageCollectionSOL, 
-  imageCollectionWe, 
+
+print("===== collectionNPP example ========")
+
+// Compute collectionNPP
+var collectionNPP = computeNPP.collectionNPP(
+  collectionNDVI, 
+  collectionLST,
+  collectionSOL, 
+  collectionWe, 
   Topt, 
   LUEmax)
 
-print(imageCollectionNPP)
-var img1 = ee.Image(imageCollectionNPP.toList(imageCollectionNPP.size()).get(0))
-var img2 = ee.Image(imageCollectionNPP.toList(imageCollectionNPP.size()).get(1))
+// Print and add the first two computed images to the map
+var img1 = ee.Image(collectionNPP.toList(collectionNPP.size()).get(0))
+var img2 = ee.Image(collectionNPP.toList(collectionNPP.size()).get(1))
+Map.addLayer(img1, NPPvisParams, 'OUT - collectionNPP img1')
+Map.addLayer(img2, NPPvisParams, 'OUT - collectionNPP img2')
+print(collectionNPP, 
+      'The first two calculated NPP images have been added to the map!')
 
-Map.addLayer(img1, NPPvisParams, 'imageCollectionNPP img1')
-Map.addLayer(img2, NPPvisParams, 'imageCollectionNPP img2')
-print('The first two calculated NPP images were added to the map!')
 
-print("======== image NPP example =========")
 
-var NDVI = imageCollectionNDVI.first()
-var LST = imageCollectionLST.first()
-var SOL = imageCollectionSOL.first()
-var We = imageCollectionWe.first()
+print("======== singleNPP example =========")
+
+var NDVI = collectionNDVI.first()
+var LST = collectionLST.first()
+var SOL = collectionSOL.first()
+var We = collectionWe.first()
 
 // Computes the number of pixels in both images
 var reduceRegionParameters = {
@@ -237,8 +243,10 @@ print('Note that the images have different numbers of pixels:',
 // Compute singleNPP
 var imageNPP = computeNPP.singleNPP(NDVI, LST, SOL, We, Topt, LUEmax)
 
-Map.addLayer(imageNPP, NPPvisParams, "imageNPP")
+// Print and add 2 images to the map
+
 print("imageNPP:", 
       imageNPP,
       imageNPP.getDownloadURL({name:"NPP", region:ROI.geometry()}))
+Map.addLayer(imageNPP, NPPvisParams, "OUT - imageNPP")
 
