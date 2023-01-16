@@ -25,7 +25,8 @@
  
 // ====================================================================================
 // Region of Interest (ROI)
-var ROI = ee.FeatureCollection("users/leobeckerdaluz/FIXED_shapes/mesoregionRS") 
+var ROI_FC = ee.FeatureCollection("users/leobeckerdaluz/FIXED_shapes/mesoregionRS") 
+var ROI = ROI_FC.geometry()
 Map.addLayer(ROI, {}, 'ROI')
 Map.centerObject(ROI)
 
@@ -47,9 +48,8 @@ var endDate = ee.Date(dates.get(-1)).advance(1,"day")
 
 
 // ====================================================================================
-// Palette to show on map
+// Visualization palette 
 var pal = ['lightgreen','darkgreen','yellow','orange','red','darkred']
-// var pal = ['red','white','darkgreen']
 
 
 
@@ -61,10 +61,10 @@ var collectionNDVI = ee.ImageCollection('MODIS/061/MOD13Q1')
   .select('NDVI')
   .map(function(img){
     return img
-      .clip(ROI)
       .rename('NDVI')                               // Rename band
       .multiply(0.0001)                             // Apply band scale
       .reproject('EPSG:4326', null, SCALE_M_PX)     // Downscale/Upscale image
+      .clip(ROI)                                    // Clipt to geometry
       .set("date", img.date().format("yyyy-MM-dd")) // Set date property
   })
 
@@ -83,8 +83,8 @@ var collectionLST = dates.map(function(dateString){
     .rename("LST")                            // Rename band
     .multiply(0.02)                           // Apply band scale
     .subtract(273.15)                         // Convert from Kelvin to Celsius
-    .clip(ROI)                                // Clip geometry
     .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .clip(ROI)                                // Clip geometry
     .set("date", dateString)                  // Set date property
 })
 // Cast list object to imageCollection
@@ -104,8 +104,8 @@ var collectionSOL = dates.map(function(dateString){
     .sum()
     .rename("SOL")                            // Rename band
     .divide(1e6)                              // Convert J/m² to MJ/m²
-    .clip(ROI)                                // Clip geometry
     .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .clip(ROI)                                // Clip geometry
     .set("date", dateString)                  // Set date property
 })
 // Cast list object to imageCollection
@@ -132,8 +132,8 @@ var collectionWe = dates.map(function(dateString){
   // For each We image, rename band, clip geometry and set date property
   return We
     .rename('We')                             // Rename band
-    .clip(ROI)                                // Clip geometry
     .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
+    .clip(ROI)                                // Clip geometry
     .set("data", dateString)                  // Set date property
 })
 // Cast list object to imageCollection
@@ -228,7 +228,7 @@ var LST = collectionLST.first()
 var SOL = collectionSOL.first()
 var We = collectionWe.first()
 
-// Computes the number of pixels in both images
+// Computes the number of pixels of images
 var reduceRegionParameters = {
   reducer: ee.Reducer.count(), 
   scale:SCALE_M_PX,
@@ -243,10 +243,9 @@ print('Note that the images have different numbers of pixels:',
 // Compute singleNPP
 var imageNPP = computeNPP.singleNPP(NDVI, LST, SOL, We, Topt, LUEmax)
 
-// Print and add 2 images to the map
-
+// Print and add the singleNPP image to the map
 print("imageNPP:", 
       imageNPP,
-      imageNPP.getDownloadURL({name:"NPP", region:ROI.geometry()}))
+      imageNPP.getDownloadURL({name:"NPP", region:ROI}))
 Map.addLayer(imageNPP, NPPvisParams, "OUT - imageNPP")
 
