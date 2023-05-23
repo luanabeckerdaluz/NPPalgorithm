@@ -24,27 +24,26 @@
 
 
 
-
 /**
 * handleInputs
 * 
 * Handle input values. Some values must not be null.
 * 
-* @param  {ImageCollection or Image} NDVI: NDVI input
-* @param  {ImageCollection or Image} LST: LST input
-* @param  {ImageCollection or Image} SOL: SOL input
-* @param  {ImageCollection or Image} We: We input
-* @param  {Number} Topt: Optimal temperature for plant growth
-* @param  {Number} LUEmax: Maximal light use efficiency
-* @param  {boolean} collection: internal flag (if processing is for collection or image)
+* @param  {Object} NDVI: NDVI input
+* @param  {Object} LST: LST input
+* @param  {Object} SOL: SOL input
+* @param  {Object} We: We input
+* @param  {Object} Topt: Optimal temperature for plant growth
+* @param  {Object} LUEmax: Maximal light use efficiency
+* @param  {boolean} isCollection: internal flag (if processing is for collection or image)
 * @return {string or boolean} Returns the error string or returns false (no error)
 */
-var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, collection){
+var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, isCollection){
   var error = ""
   
   // input NDVI Image or ImageCollection must not be null
   if (NDVI === null){
-    if (collection){
+    if (isCollection){
       error += "ERROR: imageCollectionNDVI must not be null!\n"
     }
     else{
@@ -54,7 +53,7 @@ var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, collection){
 
   // input LST Image or ImageCollection must not be null
   if (LST === null){
-    if (collection){
+    if (isCollection){
       error += "ERROR: imageCollectionLST must not be null!\n"
     }
     else{
@@ -64,7 +63,7 @@ var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, collection){
 
   // input SOL Image or ImageCollection must not be null
   if (SOL === null){
-    if (collection){
+    if (isCollection){
       error += "ERROR: imageCollectionSOL must not be null!\n"
     }
     else{
@@ -74,7 +73,7 @@ var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, collection){
 
   // input We Image or ImageCollection must not be null
   if (We === null){
-    if (collection){
+    if (isCollection){
       error += "ERROR: imageCollectionWe must not be null!\n"
     }
     else{
@@ -93,7 +92,7 @@ var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, collection){
   }
   
   // The collections must have the same size
-  if (collection && NDVI !== null && LST !== null && SOL !== null && We !== null){
+  if (isCollection && NDVI !== null && LST !== null && SOL !== null && We !== null){
     var sizeCondition1 = (NDVI.size()).neq(LST.size())
     var sizeCondition2 = (SOL.size()).neq(We.size())
     var sizeCondition3 = (NDVI.size()).neq(We.size())
@@ -154,7 +153,7 @@ var singleNPP = function(imageNDVI, imageLST, imageSOL, imageWe, Topt, LUEmax){
   var imagePAR = imageSOL.multiply(0.5);
 
   // Compute FPAR
-  var imageFPAR = imageNDVI.multiply(1.1755).subtract(0.14);
+  var imageFPAR = imageNDVI.multiply(1.2).subtract(0.14);
   
   // Compute APAR
   var imageAPAR = imagePAR.multiply(imageFPAR);

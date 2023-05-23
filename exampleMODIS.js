@@ -1,13 +1,9 @@
 /**
-* Copyright (c) Leonardo Becker da Luz and Grazieli Rodigheri 2023
+* Copyright (c) Leonardo Becker da Luz 2023
 * 
 * Leonardo Becker da Luz
 * leobeckerdaluz@gmail.com
 * National Institute for Space Research (INPE)
-* 
-* Grazieli Rodigheri
-* grazielirodigheri@gmail.com
-* Federal University of Rio Grande do Sul (UFRGS)
 * 
 * This source code is licensed under the MIT license found in the LICENSE file 
 * in the root directory of this source tree.
@@ -25,7 +21,7 @@
  
 // ====================================================================================
 // Region of Interest (ROI)
-var ROI_FC = ee.FeatureCollection("users/leobeckerdaluz/FIXED_shapes/mesoregionRS") 
+var ROI_FC = ee.FeatureCollection("users/leobeckerdaluz/Artigo2_NPP/shapefiles/shpMesoregionRS") 
 var ROI = ROI_FC.geometry()
 Map.addLayer(ROI, {}, 'ROI')
 Map.centerObject(ROI)
@@ -34,14 +30,18 @@ Map.centerObject(ROI)
 
 // ====================================================================================
 // Set scale (m/px) to upscale/downscale NDVI, LST, SOL and We images
-var SCALE_M_PX = 250
-// var SCALE_M_PX = 1000
+var SCALE_M_PX = 1000
 
 
 
 // ====================================================================================
 // Required dates
-var dates = ee.List(['2018-01-01','2018-01-17','2018-02-02','2018-02-18'])
+var dates = ee.List([
+  '2018-01-01',
+  '2018-01-17',
+  '2018-02-02',
+  '2018-02-18'
+])
 var startDate = ee.Date(dates.get(0))
 var endDate = ee.Date(dates.get(-1)).advance(1,"day")
 
@@ -145,13 +145,13 @@ Map.addLayer(collectionWe.first(), {min:0.5, max:1.0, palette:pal}, 'IN - collec
 
 // ====================================================================================
 // Optimal Temperature
-var Topt = 24.85
+var CONSTANT_TOPT = 21.66
 
 
 
 // ====================================================================================
 // Max LUE
-var LUEmax = 0.926
+var CONSTANT_LUEMAX = 0.72
 
 
 
@@ -169,17 +169,17 @@ print("============== INPUTS ==============",
       "- Image Collection We:", 
       collectionWe,
       "- Optimal Temperature:", 
-      Topt,
+      CONSTANT_TOPT,
       "- Maximum LUE:", 
-      LUEmax)
+      CONSTANT_LUEMAX
+)
 
 
 
 // ====================================================================================
 // Apply a soybean mask in all collections
-// ====================================================================================
 
-var soybeanMask = ee.Image("users/leobeckerdaluz/FIXED/soybeanMask_mesoregionRS")
+var soybeanMask = ee.Image("users/leobeckerdaluz/Artigo2_NPP/soybeanMask_mesoregionRS")
 
 var maskCollections = function(img){return img.updateMask(soybeanMask)}
 
@@ -192,7 +192,6 @@ collectionWe = collectionWe.map(maskCollections)
 
 // ====================================================================================
 // Compute NPP
-// ====================================================================================
 
 var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
@@ -208,8 +207,8 @@ var collectionNPP = computeNPP.collectionNPP(
   collectionLST,
   collectionSOL, 
   collectionWe, 
-  Topt, 
-  LUEmax)
+  CONSTANT_TOPT, 
+  CONSTANT_LUEMAX)
 
 // Print and add the first two computed images to the map
 var img1 = ee.Image(collectionNPP.toList(collectionNPP.size()).get(0))
@@ -241,7 +240,7 @@ print('Note that the images have different numbers of pixels:',
       '- We Pixels count:',  ee.Number(We.reduceRegion(reduceRegionParameters).get("We")))
 
 // Compute singleNPP
-var imageNPP = computeNPP.singleNPP(NDVI, LST, SOL, We, Topt, LUEmax)
+var imageNPP = computeNPP.singleNPP(NDVI, LST, SOL, We, CONSTANT_TOPT, CONSTANT_LUEMAX)
 
 // Print and add the singleNPP image to the map
 print("imageNPP:", 
