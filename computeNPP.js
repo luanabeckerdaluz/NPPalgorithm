@@ -35,7 +35,7 @@
 * @param  {Object} We: We input
 * @param  {Object} Topt: Optimal temperature for plant growth
 * @param  {Object} LUEmax: Maximal light use efficiency
-* @param  {boolean} isCollection: internal flag (if processing is for collection or image)
+* @param  {boolean} isCollection: internal flag
 * @return {string or boolean} Returns the error string or returns false (no error)
 */
 var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, isCollection){
@@ -96,7 +96,11 @@ var handleInputs = function(NDVI, LST, SOL, We, Topt, LUEmax, isCollection){
     var sizeCondition1 = (NDVI.size()).neq(LST.size())
     var sizeCondition2 = (SOL.size()).neq(We.size())
     var sizeCondition3 = (NDVI.size()).neq(We.size())
-    var sizeIsDifferent = ee.Algorithms.If(sizeCondition1.or(sizeCondition2).or(sizeCondition3), true, false)
+    var sizeIsDifferent = ee.Algorithms.If(
+      sizeCondition1.or(sizeCondition2).or(sizeCondition3), 
+      true, 
+      false
+    )
     if (sizeIsDifferent.getInfo()){
       error = "ERROR: NDVI, LST, SOL and WE collections don't have the same size!"
     }
@@ -187,10 +191,24 @@ var singleNPP = function(imageNDVI, imageLST, imageSOL, imageWe, Topt, LUEmax){
 * @param  {Number} LUEmax: Maximal light use efficiency
 * @return {ImageCollection} ImageCollectionNPP: NPP collection processed
 */
-var collectionNPP = function(imageCollectionNDVI, imageCollectionLST, imageCollectionSOL, imageCollectionWe, Topt, LUEmax){
+var collectionNPP = function(
+  imageCollectionNDVI, 
+  imageCollectionLST, 
+  imageCollectionSOL, 
+  imageCollectionWe, 
+  Topt, 
+  LUEmax){
   
   // Handle inputs
-  var error = handleInputs(imageCollectionNDVI, imageCollectionLST, imageCollectionSOL, imageCollectionWe, Topt, LUEmax, true)
+  var error = handleInputs(
+    imageCollectionNDVI, 
+    imageCollectionLST, 
+    imageCollectionSOL, 
+    imageCollectionWe, 
+    Topt, 
+    LUEmax, 
+    true
+  )
   if (error){
     print(error)
     return error
