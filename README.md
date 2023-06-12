@@ -17,7 +17,6 @@ developed."></a>
 <p align="center">  
   • <a href="#methodology">Methodology</a> &nbsp;
   • <a href="#example">Example</a> &nbsp;
-  • <a href="#citation">Citation</a> &nbsp;
 </p>
 
 
@@ -42,68 +41,60 @@ The NPP processing can be executed by using two main functions. After obtaining 
 ### singleNPP
 
 ``` r
-// Obtain the Region of Interest
-var ROI = ee.Geometry(...)
+var imageNDVI = ee.Image(...)   // NDVI Image
 
-// Obtain the NDVI image to be processed
-var imageNDVI = ee.Image(...)
+var imageLST = ee.Image(...)    // LST Image
 
-// Obtain the LST image to be processed
-var imageLST = ee.Image(...)
+var imageSOL = ee.Image(...)    // SOL Image
 
-// Obtain the SOL image to be processed
-var imageSOL = ee.Image(...)
+var imageWe = ee.Image(...)     // We Image
 
-// Obtain the We image to be processed
-var imageWe = ee.Image(...)
+var Topt = CONST                // Optimal temperature constant (e.g. 21.66)
 
-// Set the constant Topt
-var Topt = const
-
-// Set the constant LUEmax
-var LUEmax = const
+var LUEmax = CONST              // Max LUE constant (e.g. 0.72)
 
 // Import NPP processing module
 var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
 // Compute NPP
-var imageNPP = computeNPP.singleNPP(imageNDVI, imageLST, imageSOL, imageWe, Topt, LUEmax)
-
-// Add NPP as a layer
-Map.addLayer(imageNPP, {}, 'NPP'}
+var imageNPP = computeNPP.singleNPP(
+  imageNDVI, 
+  imageLST, 
+  imageSOL, 
+  imageWe, 
+  Topt, 
+  LUEmax
+)
 ```
 
 
 ### collectionNPP
 
 ``` r
-// Obtain the Region of Interest
-var ROI = ee.Geometry(...)
+var ROI = ee.Geometry(...)                        // Region of Interest
 
-// Obtain the NDVI image collection to be processed
-var imageCollectionNDVI = ee.ImageCollection(...)
+var imageCollectionNDVI = ee.ImageCollection(...) // NDVI image collection
 
-// Obtain the LST image collection to be processed
-var imageCollectionLST = ee.ImageCollection(...)
+var imageCollectionLST = ee.ImageCollection(...)  // LST image collection
 
-// Obtain the SOL image collection to be processed
-var imageCollectionSOL = ee.ImageCollection(...)
+var imageCollectionSOL = ee.ImageCollection(...)  // SOL image collection
 
-// Obtain the We image collection to be processed
-var imageCollectionWe = ee.ImageCollection(...)
+var imageCollectionWe = ee.ImageCollection(...)   // We image collection
 
-// Set the constant Topt
-var Topt = const
+var Topt = CONST                // Optimal temperature constant (e.g. 21.66)
 
-// Set the constant LUEmax
-var LUEmax = const
+var LUEmax = CONST              // Max LUE constant (e.g. 0.72)
 
 // Import NPP processing module
 var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
 
 // Compute NPP
-var imageCollectionNPP = computeNPP.collectionNPP(imageCollectionNDVI, imageCollectionLST, imageCollectionSOL, imageCollectionWe, Topt, LUEmax)
-
-// Add NPP first processed image as a layer
-Map.addLayer(imageCollectionNPP.first(), {}, 'NPP'}
+var imageCollectionNPP = computeNPP.collectionNPP(
+  imageCollectionNDVI, 
+  imageCollectionLST, 
+  imageCollectionSOL, 
+  imageCollectionWe, 
+  Topt, 
+  LUEmax
+)
 ```
