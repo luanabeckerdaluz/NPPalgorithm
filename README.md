@@ -25,12 +25,12 @@ developed."></a>
 </h1>
 
 
-[Google Earth Engine](https://earthengine.google.com/) is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google's infrastructure. .... ........... ........ ........... ........ ........... ........ ........... ........ .
+[Google Earth Engine](https://earthengine.google.com/) is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google's infrastructure.
 
 
 
 ## Methodology
-The methodology ........... ........ ........... ........ ........... ........ 
+The purpose of this code is to provide users with a function for calculating Net Primary Productivity (NPP).
 
 
 
