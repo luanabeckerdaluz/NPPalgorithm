@@ -16,6 +16,7 @@ developed."></a>
 
 <p align="center">  
   • <a href="#methodology">Methodology</a> &nbsp;
+  • <a href="#google-earth-engine-code-availability">GEE Code Availability</a> &nbsp;
   • <a href="#example">Example</a> &nbsp;
 </p>
 
@@ -25,7 +26,7 @@ developed."></a>
 </h1>
 
 
-[Google Earth Engine](https://earthengine.google.com/) is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google's infrastructure.
+[Google Earth Engine (GEE)](https://earthengine.google.com/) is a cloud-based platform that allows users to have an easy access to a petabyte-scale archive of remote sensing data and run geospatial analysis on Google's infrastructure.
 
 
 
@@ -34,11 +35,19 @@ The purpose of this code is to provide users with a function for calculating Net
 
 
 
+## Google Earth Engine Code Availability
+
+The source code is available in this GitHub repository as well as in the GEE repository, where you can run the example code directly in the interface. To access the repository, use the following link:
+
+https://code.earthengine.google.com/?accept_repo=users/leobeckerdaluz/NPP_algorithm
+
+
+
 ## Example
 
 The NPP processing can be executed by using two main functions. After obtaining the NDVI, LST, SOL and We collections and set the constants Topt and LUEmax, the NPP is computed for each set of images using the collectionNPP function. The first image of each collection is also used to exemplify the computation of only one NPP image by using the singleNPP function.
 
-### singleNPP
+#### singleNPP
 
 ``` r
 var imageNDVI = ee.Image(...)   // NDVI Image
@@ -68,7 +77,7 @@ var imageNPP = computeNPP.singleNPP(
 ```
 
 
-### collectionNPP
+#### collectionNPP
 
 ``` r
 var ROI = ee.Geometry(...)                        // Region of Interest
