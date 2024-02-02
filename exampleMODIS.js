@@ -26,7 +26,6 @@
 // ==============================================================================
 // Region of Interest (ROI)
 var ROI_FC = ee.FeatureCollection("projects/ee-luanabeckerdaluz/assets/paper2NPP/shapefiles/shpMesoregionRS")
-var ROI_FC = ee.FeatureCollection(ROIasset)
 var ROI = ROI_FC.geometry()
 Map.addLayer(ROI, {}, 'ROI')
 Map.centerObject(ROI)
