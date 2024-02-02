@@ -1,8 +1,8 @@
 /**
-* Copyright (c) Leonardo Becker da Luz and Grazieli Rodigheri 2023
+* Copyright (c) Luana Becker da Luz and Grazieli Rodigheri 2023
 * 
-* Leonardo Becker da Luz
-* leobeckerdaluz@gmail.com
+* Luana Becker da Luz
+* luanabeckerdaluz@gmail.com
 * National Institute for Space Research (INPE)
 * 
 * Grazieli Rodigheri
@@ -253,5 +253,3 @@ var collectionNPP = function(
 // Exports the singleNPP and collectionNPP functions to be accessed from other codes
 exports.singleNPP = singleNPP
 exports.collectionNPP = collectionNPP
-
-
