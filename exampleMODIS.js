@@ -5,6 +5,10 @@
 * luanabeckerdaluz@gmail.com
 * National Institute for Space Research (INPE)
 * 
+* Grazieli Rodigheri
+* grazielirodigheri@gmail.com
+* Federal University of Rio Grande do Sul (UFRGS)
+* 
 * This source code is licensed under the MIT license found in the LICENSE file 
 * in the root directory of this source tree.
 * ____________________________________________________________________________
