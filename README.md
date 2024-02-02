@@ -2,7 +2,7 @@
   NPP algorithm
 </h2>
 
-<h4 align="center">Google Earth Engine function to compute the Net Primary Productivity (NPP).</h4>
+<h4 align="center">Google Earth Engine function to compute Net Primary Productivity (NPP)</h4>
 
 <p align="center">
 <a href="https://www.repostatus.org/#active"><img src="https://www.repostatus.org/badges/latest/active.svg" alt="Project Status: Active – The project has reached a stable, usable
@@ -22,7 +22,7 @@ developed."></a>
 
 
 <h1 align="center">
-  <a><img src="https://user-images.githubusercontent.com/27021459/175539565-c676ede6-7036-4ee3-8bef-142cf1c0ad9b.png" alt="Markdownify" width="800"></a>
+  <a><img src="https://private-user-images.githubusercontent.com/27021459/301720501-a729b365-c957-4034-bbcc-d65361c1ae77.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDY4NDU4NzksIm5iZiI6MTcwNjg0NTU3OSwicGF0aCI6Ii8yNzAyMTQ1OS8zMDE3MjA1MDEtYTcyOWIzNjUtYzk1Ny00MDM0LWJiY2MtZDY1MzYxYzFhZTc3LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAyMDIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMjAyVDAzNDYxOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTRjZGNkZjZlNzU5ZmUxZTc0ZmQwMDY0MGM4ODEzZWUxMTk1MmJiN2FiYWEyNTUwNDVlYzM0Y2YyOTIzMzhhMTcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.4peFpD_3t_39Ayb3ugRA7a5D50wqrrP_e6lN5-31I8E" width="800"></a>
 </h1>
 
 
@@ -39,31 +39,26 @@ The purpose of this code is to provide users with a function for calculating Net
 
 The source code is available in this GitHub repository as well as in the GEE repository, where you can run the example code directly in the interface. To access the repository, use the following link:
 
-https://code.earthengine.google.com/?accept_repo=users/leobeckerdaluz/NPP_algorithm
+https://code.earthengine.google.com/?accept_repo=users/luanabeckerdaluz/NPPalgorithm
 
 
 
 ## Example
 
-The NPP processing can be executed by using two main functions. After obtaining the NDVI, LST, SOL and We collections and set the constants Topt and LUEmax, the NPP is computed for each set of images using the collectionNPP function. The first image of each collection is also used to exemplify the computation of only one NPP image by using the singleNPP function.
+The NPP processing can be executed by using two main functions. After obtaining the NDVI, LST, SOL, We collections and set the constants Topt and LUEmax, the NPP is computed for each set of images using the collectionNPP function. The first image of each collection is also used to exemplify the computation of only one NPP image by using the singleNPP function.
 
 #### singleNPP
 
 ``` r
-var imageNDVI = ee.Image(...)   // NDVI Image
-
-var imageLST = ee.Image(...)    // LST Image
-
-var imageSOL = ee.Image(...)    // SOL Image
-
-var imageWe = ee.Image(...)     // We Image
-
-var Topt = CONST                // Optimal temperature constant (e.g. 21.66)
-
-var LUEmax = CONST              // Max LUE constant (e.g. 0.72)
+var imageNDVI = ee.Image(...)
+var imageLST = ee.Image(...)
+var imageSOL = ee.Image(...)
+var imageWe = ee.Image(...)
+var Topt = CONST
+var LUEmax = CONST
 
 // Import NPP processing module
-var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
+var computeNPP = require('users/luanabeckerdaluz/NPPalgorithm:computeNPP')
 
 // Compute NPP
 var imageNPP = computeNPP.singleNPP(
@@ -80,22 +75,16 @@ var imageNPP = computeNPP.singleNPP(
 #### collectionNPP
 
 ``` r
-var ROI = ee.Geometry(...)                        // Region of Interest
-
-var imageCollectionNDVI = ee.ImageCollection(...) // NDVI image collection
-
-var imageCollectionLST = ee.ImageCollection(...)  // LST image collection
-
-var imageCollectionSOL = ee.ImageCollection(...)  // SOL image collection
-
-var imageCollectionWe = ee.ImageCollection(...)   // We image collection
-
-var Topt = CONST                // Optimal temperature constant (e.g. 21.66)
-
-var LUEmax = CONST              // Max LUE constant (e.g. 0.72)
+var ROI = ee.Geometry(...)
+var imageCollectionNDVI = ee.ImageCollection(...)
+var imageCollectionLST = ee.ImageCollection(...)
+var imageCollectionSOL = ee.ImageCollection(...)
+var imageCollectionWe = ee.ImageCollection(...)
+var Topt = CONST
+var LUEmax = CONST
 
 // Import NPP processing module
-var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
+var computeNPP = require('users/leobeckerdaluz/NPPalgorithm:computeNPP')
 
 // Compute NPP
 var imageCollectionNPP = computeNPP.collectionNPP(
