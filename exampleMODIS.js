@@ -1,8 +1,8 @@
 /**
-* Copyright (c) Leonardo Becker da Luz 2023
+* Copyright (c) Luana Becker da Luz 2023
 * 
-* Leonardo Becker da Luz
-* leobeckerdaluz@gmail.com
+* Luana Becker da Luz
+* luanabeckerdaluz@gmail.com
 * National Institute for Space Research (INPE)
 * 
 * This source code is licensed under the MIT license found in the LICENSE file 
@@ -21,7 +21,7 @@
  
 // ==============================================================================
 // Region of Interest (ROI)
-var ROIasset = "users/leobeckerdaluz/Artigo2_NPP/shapefiles/shpMesoregionRS"
+var ROI_FC = ee.FeatureCollection("projects/ee-luanabeckerdaluz/assets/paper2NPP/shapefiles/shpMesoregionRS")
 var ROI_FC = ee.FeatureCollection(ROIasset)
 var ROI = ROI_FC.geometry()
 Map.addLayer(ROI, {}, 'ROI')
@@ -188,7 +188,7 @@ print("============== INPUTS ==============",
 // ==============================================================================
 // Compute NPP
 
-var computeNPP = require('users/leobeckerdaluz/NPP_algorithm:computeNPP')
+var computeNPP = require('users/luanabeckerdaluz/NPPalgorithm:computeNPP')
 
 print("===== collectionNPP example ========")
 
@@ -250,4 +250,3 @@ print("imageNPP:",
       imageNPP,
       imageNPP.getDownloadURL({name:"NPP", region:ROI}))
 Map.addLayer(imageNPP, NPPvisParams, "OUT - imageNPP")
-
