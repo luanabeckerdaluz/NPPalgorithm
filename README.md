@@ -84,7 +84,7 @@ var Topt = CONST
 var LUEmax = CONST
 
 // Import NPP processing module
-var computeNPP = require('users/leobeckerdaluz/NPPalgorithm:computeNPP')
+var computeNPP = require('users/luanabeckerdaluz/NPPalgorithm:computeNPP')
 
 // Compute NPP
 var imageCollectionNPP = computeNPP.collectionNPP(
