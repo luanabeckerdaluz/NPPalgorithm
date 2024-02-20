@@ -31,7 +31,7 @@ developed."></a>
 
 
 ## Methodology
-The purpose of this code is to provide users with a function for calculating Net Primary Productivity (NPP).
+The purpose of this code is to provide users with a function for calculating Net Primary Productivity (NPP). More information about the methodology can be accessed in the paper [https://doi.org/10.1016/j.ecolmodel.2024.110636](https://doi.org/10.1016/j.ecolmodel.2024.110636)
 
 
 
