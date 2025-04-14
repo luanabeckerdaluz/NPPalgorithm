@@ -1,5 +1,7 @@
+var coord_label_position = /* color: #d63000 */ee.Geometry.Point([-55.46855547396158, -28.99312888993198]);
+
 /**
-* Copyright (c) Luana Becker da Luz 2023
+* Copyright (c) Luana Becker da Luz 2025
 * 
 * Luana Becker da Luz
 * luanabeckerdaluz@gmail.com
@@ -14,29 +16,37 @@
 * ____________________________________________________________________________
 * 
 * This code has an example of the use of the two main NPP functions developed 
-* (singleNPP and collectionNPP). After obtaining the NDVI, LST, SOL and We
-* collections and setting the constants Topt and LUEmax, the NPP is computed 
-* for each set of images using the collectionNPP function. The first image of 
-* each collection is also used to exemplify below the computation of only one 
-* NPP image by using the singleNPP function.
+* (singleNPP and collectionNPP). After obtaining the NDVI (MOD), We (MOD), LST 
+* (MOD) and SOL (ERA5) collections and setting the constants Topt and LUEmax, 
+* the NPP is computed for each set of images using the collectionNPP function. 
+* The first image of each collection is also used to exemplify below the 
+* computation of only one NPP image by using the singleNPP function.
 */
-
 
  
 // ==============================================================================
 // Region of Interest (ROI)
 var ROI_FC = ee.FeatureCollection("projects/ee-luanabeckerdaluz/assets/paper2NPP/shapefiles/shpMesoregionRS")
 var ROI = ROI_FC.geometry()
+var ROI_BBOX = ROI.bounds()
 Map.addLayer(ROI, {}, 'ROI')
 Map.centerObject(ROI)
 
+
+// ==============================================================================
+// GIFs parameters (based on ROI size)
+var gifFontScale = 350
+var gifParams = {
+  dimensions: 800,
+  framesPerSecond: 3,
+  ROI: ROI_BBOX
+}
 
 
 // ==============================================================================
 // Set scale (m/px) to reproject and upscale/downscale the input 
 // ... collections NDVI, LST, SOL and We.
-var SCALE_M_PX = 1000
-
+var SCALE_M_PX = 250
 
 
 // ==============================================================================
@@ -45,11 +55,12 @@ var dates = ee.List([
   '2018-01-01',
   '2018-01-17',
   '2018-02-02',
-  '2018-02-18'
+  '2018-02-18',
+  '2018-03-06',
+  '2018-03-22'
 ])
 var startDate = ee.Date(dates.get(0))
 var endDate = ee.Date(dates.get(-1)).advance(1,"day")
-
 
 
 // ==============================================================================
@@ -62,11 +73,16 @@ var WEvis   = {min:0.5, max:1.0, palette:pal}
 var NPPvisParams = {min:20, max:130, palette:pal}
 
 
+// ==============================================================================
+// Import NPP and label gif modules
+var computeNPP = require('users/luanabeckerdaluz/NPPalgorithm:computeNPP')
+var utils = require('users/luanabeckerdaluz/GEEtools:gif_label')
+
 
 // ==============================================================================
 // NDVI collection
 var collectionNDVI = ee.ImageCollection('MODIS/061/MOD13Q1')
-  .filterBounds(ROI)
+  .filterBounds(ROI_BBOX)
   .filterDate(startDate, endDate)
   .select('NDVI')
   .map(function(img){
@@ -80,6 +96,17 @@ var collectionNDVI = ee.ImageCollection('MODIS/061/MOD13Q1')
 
 Map.addLayer(collectionNDVI.first(), NDVIvis, 'IN - collectionNDVI img1')
 
+// Generate gif
+var GIFcollectionNDVI = collectionNDVI.map(function(img){ 
+  return img.visualize(NDVIvis).set("date", img.get("date")) 
+})
+var GIF_NDVI = utils.gif_label_return({
+  col: GIFcollectionNDVI,
+  coord_label_position: coord_label_position,
+  col_label_attribute: "date",
+  fontScale: gifFontScale,
+  gifParams: gifParams
+})
 
 
 // ==============================================================================
@@ -88,7 +115,7 @@ Map.addLayer(collectionNDVI.first(), NDVIvis, 'IN - collectionNDVI img1')
 //        ... and compute the mean of these images (mean temperature).
 var collectionLST = dates.map(function(dateString){
   return ee.ImageCollection("MODIS/061/MOD11A2")
-    .filterBounds(ROI)
+    .filterBounds(ROI_BBOX)
     .filterDate(ee.Date(dateString), ee.Date(dateString).advance(16, "day"))
     .select('LST_Day_1km')
     .mean()                                   // Compute mean of the 2 images
@@ -104,6 +131,17 @@ collectionLST = ee.ImageCollection(collectionLST)
 
 Map.addLayer(collectionLST.first(), LSTvis, 'IN - collectionLST img1')
 
+// Generate gif
+var GIFcollectionLST = collectionLST.map(function(img){ 
+  return img.visualize(LSTvis).set("date", img.get("date")) 
+})
+var GIF_LST = utils.gif_label_return({
+  col: GIFcollectionLST,
+  coord_label_position: coord_label_position,
+  col_label_attribute: "date",
+  fontScale: gifFontScale,
+  gifParams: gifParams
+})
 
 
 // ==============================================================================
@@ -112,7 +150,7 @@ Map.addLayer(collectionLST.first(), LSTvis, 'IN - collectionLST img1')
 //        ... and compute the sum of these images (accumulate radiation).
 var collectionSOL = dates.map(function(dateString){
   return ee.ImageCollection("ECMWF/ERA5_LAND/DAILY_AGGR")
-    .filterBounds(ROI)
+    .filterBounds(ROI_BBOX)
     .filterDate(ee.Date(dateString), ee.Date(dateString).advance(16, "day"))
     .select('surface_solar_radiation_downwards_sum')
     .sum()
@@ -127,6 +165,17 @@ collectionSOL = ee.ImageCollection(collectionSOL)
 
 Map.addLayer(collectionSOL.first(), SOLvis, 'IN - collectionSOL img1')
 
+// Generate gif
+var GIFcollectionSOL = collectionSOL.map(function(img){ 
+  return img.visualize(SOLvis).set("date", img.get("date"))
+})
+var GIF_SOL = utils.gif_label_return({
+  col: GIFcollectionSOL,
+  coord_label_position: coord_label_position,
+  col_label_attribute: "date",
+  fontScale: gifFontScale,
+  gifParams: gifParams
+})
 
 
 // ==============================================================================
@@ -150,13 +199,24 @@ var collectionWe = dates.map(function(dateString){
     .rename('We')                             // Rename band
     .reproject('EPSG:4326', null, SCALE_M_PX) // Downscale/Upscale image
     .clip(ROI)                                // Clip geometry
-    .set("data", dateString)                  // Set date property
+    .set("date", dateString)                  // Set date property
 })
 // Cast list object to imageCollection
 collectionWe = ee.ImageCollection(collectionWe)
 
 Map.addLayer(collectionWe.first(), WEvis, 'IN - collectionWe img1')
 
+// Generate gif
+var GIFcollectionWe = collectionWe.map(function(img){ 
+  return img.visualize(WEvis).set("date", img.get("date"))
+})
+var GIF_We = utils.gif_label_return({
+  col: GIFcollectionWe,
+  coord_label_position: coord_label_position,
+  col_label_attribute: "date",
+  fontScale: gifFontScale,
+  gifParams: gifParams
+})
 
 
 // ==============================================================================
@@ -164,22 +224,24 @@ Map.addLayer(collectionWe.first(), WEvis, 'IN - collectionWe img1')
 var CONSTANT_TOPT = 21.66
 
 
-
 // ==============================================================================
 // Max LUE
 var CONSTANT_LUEMAX = 0.72
 
 
-
 print("============== INPUTS ==============",
       "- Image Collection NDVI:", 
       collectionNDVI,
+      GIF_NDVI,
       "- Image Collection LST:", 
       collectionLST,
+      GIF_LST,
       "- Image Collection SOL:", 
       collectionSOL,
+      GIF_SOL,
       "- Image Collection We:", 
       collectionWe,
+      GIF_We,
       "- Optimal Temperature:", 
       CONSTANT_TOPT,
       "- Maximum LUE:", 
@@ -187,13 +249,8 @@ print("============== INPUTS ==============",
 )
 
 
-
 // ==============================================================================
-// Compute NPP
-
-var computeNPP = require('users/luanabeckerdaluz/NPPalgorithm:computeNPP')
-
-print("===== collectionNPP example ========")
+// Compute collection NPP
 
 // Compute collectionNPP
 var collectionNPP = computeNPP.collectionNPP(
@@ -210,35 +267,38 @@ var img1 = ee.Image(collectionNPP.toList(collectionNPP.size()).get(0))
 var img2 = ee.Image(collectionNPP.toList(collectionNPP.size()).get(1))
 Map.addLayer(img1, NPPvisParams, 'OUT - collectionNPP img1')
 Map.addLayer(img2, NPPvisParams, 'OUT - collectionNPP img2')
+
+// Collection GIF
+var collectionNPPList = collectionNPP.toList(collectionNPP.size())
+var colNppVisualize = ee.List.sequence(0, dates.size().subtract(1)).map(function(i){
+  var img = ee.Image(collectionNPPList.get(i))
+  var date = ee.String(dates.get(i))
+  return img.visualize(NPPvisParams).set("date", date)
+})
+colNppVisualize = ee.ImageCollection(colNppVisualize)
+var GIFcollectionNPP = utils.gif_label_return({
+  col: colNppVisualize,
+  coord_label_position: coord_label_position,
+  col_label_attribute: "date",
+  fontScale: gifFontScale,
+  gifParams: gifParams
+})
+
 print(
+  "===== collectionNPP example ========",
   collectionNPP, 
-  'The first two calculated NPP images have been added to the map!'
+  "The first two calculated NPP images",
+  "...have been added to the map!",
+  GIFcollectionNPP
 )
 
 
-
-print("======== singleNPP example =========")
-
+// Compute single NPP
 var NDVI = collectionNDVI.first()
 var LST = collectionLST.first()
 var SOL = collectionSOL.first()
 var We = collectionWe.first()
 
-// Computes the number of pixels of images
-var reduceParams = {
-  reducer: ee.Reducer.count(), 
-  scale:SCALE_M_PX,
-  geometry: ROI
-}
-print(
-  'Note that the images have different numbers of pixels:',
-  '- NDVI Pixels count:', ee.Number(NDVI.reduceRegion(reduceParams).get("NDVI")),
-  '- LST Pixels count:',  ee.Number(LST.reduceRegion(reduceParams).get("LST")),
-  '- SOL Pixels count:',  ee.Number(SOL.reduceRegion(reduceParams).get("SOL")),
-  '- We Pixels count:',  ee.Number(We.reduceRegion(reduceParams).get("We"))
-)
-
-// Compute singleNPP
 var imageNPP = computeNPP.singleNPP(
   NDVI, 
   LST, 
@@ -248,8 +308,22 @@ var imageNPP = computeNPP.singleNPP(
   CONSTANT_LUEMAX
 )
 
-// Print and add the singleNPP image to the map
-print("imageNPP:", 
-      imageNPP,
-      imageNPP.getDownloadURL({name:"NPP", region:ROI}))
+// Computes the number of pixels of images
+var reduceParams = {
+  reducer: ee.Reducer.count(), 
+  scale:SCALE_M_PX,
+  geometry: ROI
+}
+
+print(
+  "======== singleNPP example =========",
+  'Note that the images have different numbers of pixels:',
+  '- NDVI Pixels count:', ee.Number(NDVI.reduceRegion(reduceParams).get("NDVI")),
+  '- LST Pixels count:',  ee.Number(LST.reduceRegion(reduceParams).get("LST")),
+  '- SOL Pixels count:',  ee.Number(SOL.reduceRegion(reduceParams).get("SOL")),
+  '- We Pixels count:',  ee.Number(We.reduceRegion(reduceParams).get("We")),
+  "computed NPP: ", 
+  imageNPP,
+  imageNPP.getDownloadURL({name:"NPP", region:ROI})
+)
 Map.addLayer(imageNPP, NPPvisParams, "OUT - imageNPP")
